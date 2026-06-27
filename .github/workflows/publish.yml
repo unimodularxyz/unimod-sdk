@@ -1,0 +1,37 @@
+name: Publish to npm
+
+# Publishes @unimodular/unimod-sdk when a GitHub Release is published.
+# Auth is via npm Trusted Publishing (OIDC) — no NPM_TOKEN secret stored.
+# Prereqs (one-time): the package must already exist on npm (do the first
+# publish manually), and this repo+workflow must be registered as a Trusted
+# Publisher under the package settings on npmjs.com.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+permissions:
+  contents: read
+  id-token: write # REQUIRED: lets the runner mint the short-lived OIDC token npm verifies
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # Trusted Publishing + provenance need a recent npm.
+      - run: npm install -g npm@latest
+
+      - run: npm ci
+      - run: npm run build
+
+      # No token needed: npm detects the OIDC credential from id-token:write.
+      # --provenance attaches a signed build attestation; access:public is in package.json.
+      - run: npm publish --provenance --access public

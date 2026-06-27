@@ -5,7 +5,7 @@
  *    In production, replace them with the full codegen'd ABIs from the **contracts repo**:
  *    `unimod` runs `yarn abis` (wagmi) → `web3/generated.ts`. The ABIs flow contracts → SDK,
  *    never the reverse (see the contracts repo's web3/README.md "unimod-sdk" section). Either
- *    publish `@unimodularxyz/contracts` and depend on it, or sync `generated.ts` into `src/`.
+ *    publish `@unimodular/contracts` and depend on it, or sync `generated.ts` into `src/`.
  */
 
 import { parseAbi } from "viem";

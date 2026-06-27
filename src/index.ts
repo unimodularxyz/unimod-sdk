@@ -1,8 +1,8 @@
 /**
- * @unimodularxyz/unimod-sdk — typed, ergonomic client for the Unimod protocol.
+ * @unimodular/unimod-sdk — typed, ergonomic client for the Unimod protocol.
  *
  * Quick start:
- *   import { createUnimodClient, addressesFromDeployments, getPoolView } from "@unimodularxyz/unimod-sdk";
+ *   import { createUnimodClient, addressesFromDeployments, getPoolView } from "@unimodular/unimod-sdk";
  *   const uni = createUnimodClient({ public: publicClient, wallet: walletClient, addresses: addressesFromDeployments(deployments) });
  *   const pool = await getPoolView(uni, poolId, [6, 18]);
  */

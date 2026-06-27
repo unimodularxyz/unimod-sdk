@@ -1,4 +1,4 @@
-# @unimodularxyz/unimod-sdk
+# @unimodular/unimod-sdk
 
 Typed, ergonomic TypeScript SDK for the [Unimod protocol](https://github.com/unimodularxyz/unimod)
 (n-asset AMM + oracle-free per-asset lending). Thin wrappers over the `Router` (writes) and `Lens`
@@ -10,7 +10,7 @@ Typed, ergonomic TypeScript SDK for the [Unimod protocol](https://github.com/uni
 ## Install
 
 ```bash
-pnpm add @unimodularxyz/unimod-sdk viem   # viem is a peer dependency
+pnpm add @unimodular/unimod-sdk viem   # viem is a peer dependency
 ```
 
 ## Quick start
@@ -25,7 +25,7 @@ import {
   swapExactIn,
   getPositionView,
   getApy,
-} from "@unimodularxyz/unimod-sdk";
+} from "@unimodular/unimod-sdk";
 import deployments from "../contracts/deployments/31337.json"; // from the contracts deploy
 
 const uni = createUnimodClient({
@@ -76,7 +76,7 @@ The ABIs are **derived from the contracts** and flow contracts → SDK, never th
 for the skeleton to build and run. Before this is production:
 
 - **Preferred:** the contracts repo publishes its codegen'd ABIs (`web3/generated.ts` from `yarn abis`)
-  as `@unimodularxyz/contracts`; this SDK depends on that package and re-exports from it.
+  as `@unimodular/contracts`; this SDK depends on that package and re-exports from it.
 - **Interim:** sync `generated.ts` into `src/` (a `sync-abis` script copying from a local contracts
   checkout), or vendor it.
 
