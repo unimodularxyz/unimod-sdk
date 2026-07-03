@@ -5,7 +5,7 @@ name: Publish to npm
 #
 # Hardened: third-party actions pinned to commit SHAs, npm pinned, permissions
 # scoped to the job that needs them. (The human reviewer gate was removed in favour
-# of fully-automatic publishing — see auto-release.yml for the contract-driven path.)
+# of fully-automatic publishing — see release.yml for the contract-driven path.)
 #
 # Prereqs (one-time): the package must already exist on npm (first publish was
 # manual), and this repo+workflow is registered as a Trusted Publisher under the
