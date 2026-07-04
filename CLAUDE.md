@@ -61,3 +61,9 @@ These are the rules the wrappers exist to enforce. Preserve them in any change:
 ## Source of truth for protocol semantics
 
 Protocol concepts, per-flow detail, the full error catalog, and the units rules live in the **contracts repo** under [`web3/`](https://github.com/unimodularxyz/unimod/tree/main/web3) (`ui-flows.md`, `units.md`, `events.md`, `glossary.md`, `examples/`). When a question is about *what the protocol does* rather than *how this SDK is shaped*, that repo is authoritative — the SDK is its typed surface.
+
+## Ecosystem
+
+Cross-repo map of the whole Unimod suite (unimod, be, fe, design) — how this SDK fits in.
+
+@../unimod/ECOSYSTEM.md
