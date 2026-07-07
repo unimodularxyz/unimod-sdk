@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - contracts.ref
+  workflow_dispatch: {} # manual re-release at the current contracts.ref (bumps + publishes)
 
 permissions: {}
 
