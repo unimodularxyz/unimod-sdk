@@ -1,5 +1,9 @@
 node_modules/
 dist/
+# pinned contracts checkout (cloned by scripts/sync-contracts.sh — never committed)
+contracts/
+# generated at build time from the contracts checkout (philo 1 — never committed)
+src/generated.ts
 *.log
 .DS_Store
 *.tsbuildinfo

@@ -21,14 +21,15 @@ export interface PoolView {
   totalLpShares: string;
 }
 
-/** Every pool id (`MarketRegistry.listPools`). */
-export function enumeratePools(uni: UnimodClient, limit = 200n): Promise<readonly Hex[]> {
-  return uni.public.readContract({
+/** Every pool id (`MarketRegistry.listPools` returns `(marketIds, poolIds)` — we want the ids). */
+export async function enumeratePools(uni: UnimodClient, limit = 200n): Promise<readonly Hex[]> {
+  const [, poolIds] = await uni.public.readContract({
     address: uni.addresses.registry,
     abi: registryAbi,
     functionName: "listPools",
     args: [0n, limit],
   });
+  return poolIds;
 }
 
 /**

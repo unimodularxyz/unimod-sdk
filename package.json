@@ -15,14 +15,18 @@
   },
   "files": ["dist", "src"],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "contracts:sync": "bash scripts/sync-contracts.sh",
+    "codegen": "npm run contracts:sync && forge build --root contracts && wagmi generate",
+    "build": "npm run codegen && tsc -p tsconfig.json",
+    "typecheck": "npm run codegen && tsc --noEmit",
+    "clean": "rm -rf dist src/generated.ts"
   },
   "peerDependencies": {
     "viem": "^2.0.0"
   },
   "devDependencies": {
+    "@wagmi/cli": "^2.1.0",
+    "abitype": "^1.0.0",
     "typescript": "^5.4.0",
     "viem": "^2.21.0"
   },
