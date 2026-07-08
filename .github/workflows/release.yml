@@ -6,11 +6,14 @@ name: Release on contracts pin change
 #
 # Loop-safe: the version-bump commit touches package.json only (not contracts.ref), so it
 # does NOT re-trigger this workflow.
+#
+# workflow_dispatch covers SDK-only fixes (no contracts change): same pipeline, manual trigger.
 on:
   push:
     branches: [main]
     paths:
       - contracts.ref
+  workflow_dispatch: {}
 
 permissions: {}
 

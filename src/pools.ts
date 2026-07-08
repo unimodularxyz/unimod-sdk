@@ -46,7 +46,7 @@ export async function getPoolView(uni: UnimodClient, poolId: Hex, tokenDecimals:
 
   return {
     poolId,
-    type: s.poolType === 0 ? "Star" : "Delta",
+    type: s.poolType === 1 ? "Star" : "Delta", // IPool.PoolType: Delta = 0, Star = 1
     marketId: s.marketId,
     concentrationPct: bpsToPct(s.concentration),
     poolValue: formatAmount(s.poolValue, 18),
