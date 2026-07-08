@@ -3,8 +3,9 @@
  *
  * Assets-mode entry points only (token-native decimals); LP shares are 18-dp. Preconditions:
  * supply/repay pull ERC20s via Permit2 (`ensurePermit2Approval`); depositCollateral pulls the
- * ERC6909 LP via the Router (`ensureLpOperator`); withdraw/borrow/repay act `onBehalf`, so the
- * Router must be authorized once on the lending side (`ensureLendingAuthorization`).
+ * ERC6909 LP via the Router (`ensureLpOperator`); supply/withdraw/borrow/repay ALL act `onBehalf`
+ * (supply included — lending gates it), so the Router must be authorized once on the lending
+ * side (`ensureLendingAuthorization`).
  */
 
 import type { Address, Hex } from "viem";
