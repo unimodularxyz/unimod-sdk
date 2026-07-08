@@ -12,6 +12,7 @@ export * from "./units.js";
 export * from "./pools.js";
 export * from "./swap.js";
 export * from "./liquidity.js";
+export * from "./lending.js";
 export * from "./position.js";
 export * from "./onboard.js";
 export * from "./errors.js";

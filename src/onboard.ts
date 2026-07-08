@@ -53,15 +53,27 @@ export async function ensureLpOperator(uni: UnimodClient, owner: Address): Promi
   ];
 }
 
-/** Authorize the Router to act on the user's behalf on the lending side (gas path). */
-export async function ensureLendingAuthorization(uni: UnimodClient, owner: Address): Promise<Hex> {
+/**
+ * Authorize the Router to act on the user's behalf on the lending side (gas path).
+ * Idempotent like the other helpers; returns [] if already authorized.
+ */
+export async function ensureLendingAuthorization(uni: UnimodClient, owner: Address): Promise<Hex[]> {
   if (!uni.wallet) throw new Error("ensureLendingAuthorization needs a wallet client");
-  return uni.wallet.writeContract({
+  const authorized = await uni.public.readContract({
     address: uni.addresses.lending,
     abi: lendingAbi,
-    functionName: "setAuthorization",
-    args: [uni.addresses.router, true],
-    account: owner,
-    chain: uni.wallet.chain,
+    functionName: "isAuthorized",
+    args: [owner, uni.addresses.router],
   });
+  if (authorized) return [];
+  return [
+    await uni.wallet.writeContract({
+      address: uni.addresses.lending,
+      abi: lendingAbi,
+      functionName: "setAuthorization",
+      args: [uni.addresses.router, true],
+      account: owner,
+      chain: uni.wallet.chain,
+    }),
+  ];
 }
