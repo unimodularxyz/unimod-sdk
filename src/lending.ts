@@ -10,7 +10,7 @@
 
 import type { Address, Hex } from "viem";
 import { writePadded, type UnimodClient } from "./client.js";
-import { lensAbi, routerAbi } from "./abis.js";
+import { lendingAbi, lensAbi, routerAbi } from "./abis.js";
 import { deadline as defaultDeadline } from "./units.js";
 
 export interface LendingAmountArgs {
@@ -150,4 +150,29 @@ export async function previewMaxBorrow(uni: UnimodClient, poolId: Hex, assetInde
     functionName: "previewMaxBorrow",
     args: [poolId, assetIndex, user],
   });
+}
+
+export interface MarketState {
+  totalSupplyAssets: bigint;
+  totalBorrowAssets: bigint;
+  availableLiquidity: bigint;
+  utilization: number; // 0..1, WITH pending interest accrued
+}
+
+/** Market-wide totals (interest accrued to now) — what utilization is actually computed from. */
+export async function getMarketState(uni: UnimodClient, poolId: Hex, assetIndex: bigint): Promise<MarketState> {
+  const m = await uni.public.readContract({
+    address: uni.addresses.lending,
+    abi: lendingAbi,
+    functionName: "previewAccruedMarket",
+    args: [poolId, assetIndex],
+  });
+  const supply = BigInt(m.totalSupplyAssets);
+  const borrow = BigInt(m.totalBorrowAssets);
+  return {
+    totalSupplyAssets: supply,
+    totalBorrowAssets: borrow,
+    availableLiquidity: supply - borrow,
+    utilization: supply === 0n ? 0 : Number(borrow) / Number(supply),
+  };
 }
