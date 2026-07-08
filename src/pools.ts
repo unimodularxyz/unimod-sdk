@@ -16,7 +16,8 @@ export interface PoolView {
   poolValue: string; // numeraire, 18-dp
   balances: string[]; // per asset, each in its OWN token decimals
   prices: number[]; // WAD → float
-  liquidity: { ratio: number; utilizationPct: number; atGuard: boolean };
+  maxLiquidityRatio: number; // pool param: post-swap bound on max/min asset value (e.g. 4 = 4×)
+  liquidity: { ratio: number; maxRatio: number; utilizationPct: number; atGuard: boolean };
   fees: { swapPct: number; mintPct: number };
   totalLpShares: string;
 }
@@ -52,8 +53,10 @@ export async function getPoolView(uni: UnimodClient, poolId: Hex, tokenDecimals:
     poolValue: formatAmount(s.poolValue, 18),
     balances: s.balances.map((b, i) => formatAmount(b, tokenDecimals[i] ?? 18)),
     prices: s.prices.map(fromWad),
+    maxLiquidityRatio: Number(s.maxLiquidityRatio),
     liquidity: {
       ratio: Number(s.currentRatioBps) / 10_000,
+      maxRatio: Number(s.maxRatioBps) / 10_000,
       utilizationPct: bpsToPct(s.utilizationBps),
       atGuard: s.utilizationBps >= 10_000n,
     },
