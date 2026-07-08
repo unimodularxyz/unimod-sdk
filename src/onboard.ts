@@ -9,7 +9,7 @@
 import type { Address, Hex } from "viem";
 import { maxUint160, maxUint48, maxUint256 } from "viem";
 import type { UnimodClient } from "./client.js";
-import { erc20Abi, lendingAbi, permit2Abi } from "./abis.js";
+import { erc20Abi, erc6909Abi, lendingAbi, permit2Abi } from "./abis.js";
 
 /**
  * Ensure the two-step Permit2 standing approval for one token: `token.approve(permit2)` then
@@ -37,6 +37,20 @@ export async function ensurePermit2Approval(uni: UnimodClient, token: Address, o
     );
   }
   return sent;
+}
+
+/**
+ * Ensure the Router is an ERC6909 operator on the Unimod core — required before `removeLiquidity`
+ * and `zapOut` (the Router pulls the caller's LP shares). Idempotent; returns [] if already set.
+ */
+export async function ensureLpOperator(uni: UnimodClient, owner: Address): Promise<Hex[]> {
+  if (!uni.wallet) throw new Error("ensureLpOperator needs a wallet client");
+  const { unimod, router } = uni.addresses;
+  const isOp = await uni.public.readContract({ address: unimod, abi: erc6909Abi, functionName: "isOperator", args: [owner, router] });
+  if (isOp) return [];
+  return [
+    await uni.wallet.writeContract({ address: unimod, abi: erc6909Abi, functionName: "setOperator", args: [router, true], account: owner, chain: uni.wallet.chain }),
+  ];
 }
 
 /** Authorize the Router to act on the user's behalf on the lending side (gas path). */

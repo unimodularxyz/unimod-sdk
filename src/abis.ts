@@ -28,3 +28,12 @@ export const permit2Abi = parseAbi([
   "function approve(address token, address spender, uint160 amount, uint48 expiration)",
   "function allowance(address user, address token, address spender) view returns (uint160 amount, uint48 expiration, uint48 nonce)",
 ]);
+
+// ERC6909 surface on the Unimod core (LP shares) — only what the LP flows need. The core isn't in
+// the wagmi codegen include-list (the SDK never calls its pool functions directly; Router does),
+// so this stays a stable hand fragment like permit2.
+export const erc6909Abi = parseAbi([
+  "function setOperator(address operator, bool approved) returns (bool)",
+  "function isOperator(address owner, address operator) view returns (bool)",
+  "function balanceOf(address owner, uint256 id) view returns (uint256)",
+]);

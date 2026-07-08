@@ -7,6 +7,7 @@
 import type { Address, PublicClient, WalletClient } from "viem";
 
 export interface UnimodAddresses {
+  unimod: Address; // AMM core — ERC6909 LP shares live here (operator approvals, balances)
   router: Address;
   lens: Address;
   lending: Address;
@@ -30,11 +31,12 @@ export function createUnimodClient(args: {
 
 /**
  * Pull addresses out of a `deployments/{chainId}.json` bundle (written by the contracts deploy script).
- * Shape: `{ contracts: { router, lens, lending, marketRegistry, permit2 } }`.
+ * Shape: `{ contracts: { unimod, router, lens, lending, marketRegistry, permit2 } }`.
  */
 export function addressesFromDeployments(json: { contracts: Record<string, string> }): UnimodAddresses {
   const c = json.contracts;
   return {
+    unimod: c.unimod as Address,
     router: c.router as Address,
     lens: c.lens as Address,
     lending: c.lending as Address,
