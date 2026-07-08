@@ -8,14 +8,9 @@
  */
 
 import type { Address, Hex } from "viem";
-import type { UnimodClient } from "./client.js";
+import { writePadded, type UnimodClient } from "./client.js";
 import { lensAbi, routerAbi } from "./abis.js";
 import { deadline as defaultDeadline } from "./units.js";
-
-function wallet(uni: UnimodClient, fn: string) {
-  if (!uni.wallet) throw new Error(`${fn} needs a wallet client`);
-  return uni.wallet;
-}
 
 export interface LendingAmountArgs {
   poolId: Hex;
@@ -27,25 +22,25 @@ export interface LendingAmountArgs {
 
 /** Supply `assets` to the market; interest accrues to `account`'s supply shares. */
 export async function supply(uni: UnimodClient, args: LendingAmountArgs): Promise<Hex> {
-  return wallet(uni, "supply").writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "supply",
     args: [args.poolId, args.assetIndex, args.assets, args.account, args.deadline ?? defaultDeadline()],
     account: args.account,
-    chain: uni.wallet!.chain,
+    chain: uni.wallet?.chain,
   });
 }
 
 /** Withdraw an exact asset amount from the market back to `account`. */
 export async function withdraw(uni: UnimodClient, args: LendingAmountArgs): Promise<Hex> {
-  return wallet(uni, "withdraw").writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "withdraw",
     args: [args.poolId, args.assetIndex, args.assets, args.account, args.account, args.deadline ?? defaultDeadline()],
     account: args.account,
-    chain: uni.wallet!.chain,
+    chain: uni.wallet?.chain,
   });
 }
 
@@ -54,13 +49,13 @@ export async function withdrawMax(
   uni: UnimodClient,
   args: Omit<LendingAmountArgs, "assets">,
 ): Promise<Hex> {
-  return wallet(uni, "withdrawMax").writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "withdrawMax",
     args: [args.poolId, args.assetIndex, args.account, args.account, args.deadline ?? defaultDeadline()],
     account: args.account,
-    chain: uni.wallet!.chain,
+    chain: uni.wallet?.chain,
   });
 }
 
@@ -73,61 +68,61 @@ export interface CollateralArgs {
 
 /** Post free LP shares as collateral. Precondition: `ensureLpOperator`. */
 export async function depositCollateral(uni: UnimodClient, args: CollateralArgs): Promise<Hex> {
-  return wallet(uni, "depositCollateral").writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "depositCollateral",
     args: [args.poolId, args.lpShares, args.account, args.deadline ?? defaultDeadline()],
     account: args.account,
-    chain: uni.wallet!.chain,
+    chain: uni.wallet?.chain,
   });
 }
 
 /** Release collateral back to free LP (health-checked on-chain). */
 export async function withdrawCollateral(uni: UnimodClient, args: CollateralArgs): Promise<Hex> {
-  return wallet(uni, "withdrawCollateral").writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "withdrawCollateral",
     args: [args.poolId, args.lpShares, args.account, args.account, args.deadline ?? defaultDeadline()],
     account: args.account,
-    chain: uni.wallet!.chain,
+    chain: uni.wallet?.chain,
   });
 }
 
 /** Release as much collateral as health allows. */
 export async function withdrawCollateralMax(uni: UnimodClient, args: Omit<CollateralArgs, "lpShares">): Promise<Hex> {
-  return wallet(uni, "withdrawCollateralMax").writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "withdrawCollateralMax",
     args: [args.poolId, args.account, args.account, args.deadline ?? defaultDeadline()],
     account: args.account,
-    chain: uni.wallet!.chain,
+    chain: uni.wallet?.chain,
   });
 }
 
 /** Borrow against posted LP collateral (borrow-LTV enforced on-chain). Precondition: `ensureLendingAuthorization`. */
 export async function borrow(uni: UnimodClient, args: LendingAmountArgs): Promise<Hex> {
-  return wallet(uni, "borrow").writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "borrow",
     args: [args.poolId, args.assetIndex, args.assets, args.account, args.account, args.deadline ?? defaultDeadline()],
     account: args.account,
-    chain: uni.wallet!.chain,
+    chain: uni.wallet?.chain,
   });
 }
 
 /** Repay an exact asset amount of `account`'s debt. */
 export async function repay(uni: UnimodClient, args: LendingAmountArgs): Promise<Hex> {
-  return wallet(uni, "repay").writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "repay",
     args: [args.poolId, args.assetIndex, args.assets, args.account, args.deadline ?? defaultDeadline()],
     account: args.account,
-    chain: uni.wallet!.chain,
+    chain: uni.wallet?.chain,
   });
 }
 
@@ -136,13 +131,13 @@ export async function repay(uni: UnimodClient, args: LendingAmountArgs): Promise
  * cover debt + interest accrued up to inclusion; anything unused is refunded by the Router.
  */
 export async function repayMax(uni: UnimodClient, args: { poolId: Hex; assetIndex: bigint; maxAmount: bigint; account: Address; deadline?: bigint }): Promise<Hex> {
-  return wallet(uni, "repayMax").writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "repayMax",
     args: [args.poolId, args.assetIndex, args.maxAmount, args.account, args.deadline ?? defaultDeadline()],
     account: args.account,
-    chain: uni.wallet!.chain,
+    chain: uni.wallet?.chain,
   });
 }
 

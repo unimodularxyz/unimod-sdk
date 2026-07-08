@@ -10,7 +10,7 @@
 
 import type { Address, Hex } from "viem";
 import { encodePacked, keccak256 } from "viem";
-import type { UnimodClient } from "./client.js";
+import { writePadded, type UnimodClient } from "./client.js";
 import { lensAbi, routerAbi } from "./abis.js";
 import { deadline as defaultDeadline, minOut } from "./units.js";
 
@@ -61,7 +61,7 @@ export async function addLiquidity(uni: UnimodClient, args: AddLiquidityArgs): P
   if (!uni.wallet) throw new Error("addLiquidity needs a wallet client");
   const { lpShares } = await previewAddLiquidity(uni, args.poolId, args.maxAmounts);
 
-  return uni.wallet.writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "addLiquidity",
@@ -92,7 +92,7 @@ export async function removeLiquidity(uni: UnimodClient, args: RemoveLiquidityAr
   if (!uni.wallet) throw new Error("removeLiquidity needs a wallet client");
   const quoted = await previewRemoveLiquidity(uni, args.poolId, args.lpShares);
 
-  return uni.wallet.writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "removeLiquidity",
@@ -145,7 +145,7 @@ export async function zapIn(uni: UnimodClient, args: ZapInArgs): Promise<Hex> {
   if (!uni.wallet) throw new Error("zapIn needs a wallet client");
   const quoted = await previewZapIn(uni, args.poolId, args.assetIndex, args.lpSharesOut);
 
-  return uni.wallet.writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "zapIn",
@@ -176,7 +176,7 @@ export async function zapOut(uni: UnimodClient, args: ZapOutArgs): Promise<Hex> 
   if (!uni.wallet) throw new Error("zapOut needs a wallet client");
   const quoted = await previewZapOut(uni, args.poolId, args.assetIndex, args.lpSharesIn);
 
-  return uni.wallet.writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "zapOut",

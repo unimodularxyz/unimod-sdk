@@ -8,7 +8,7 @@
 
 import type { Address, Hex } from "viem";
 import { maxUint160, maxUint48, maxUint256 } from "viem";
-import type { UnimodClient } from "./client.js";
+import { writePadded, type UnimodClient } from "./client.js";
 import { erc20Abi, erc6909Abi, lendingAbi, permit2Abi } from "./abis.js";
 
 /**
@@ -24,7 +24,7 @@ export async function ensurePermit2Approval(uni: UnimodClient, token: Address, o
   const erc20Allow = await uni.public.readContract({ address: token, abi: erc20Abi, functionName: "allowance", args: [owner, permit2] });
   if (erc20Allow < maxUint256 / 2n) {
     sent.push(
-      await uni.wallet.writeContract({ address: token, abi: erc20Abi, functionName: "approve", args: [permit2, maxUint256], account: owner, chain: uni.wallet.chain }),
+      await writePadded(uni, { address: token, abi: erc20Abi, functionName: "approve", args: [permit2, maxUint256], account: owner, chain: uni.wallet.chain }),
     );
   }
 
@@ -33,7 +33,7 @@ export async function ensurePermit2Approval(uni: UnimodClient, token: Address, o
   const now = Math.floor(Date.now() / 1000);
   if (amount < maxUint160 / 2n || Number(expiration) < now) {
     sent.push(
-      await uni.wallet.writeContract({ address: permit2, abi: permit2Abi, functionName: "approve", args: [token, router, maxUint160, Number(maxUint48)], account: owner, chain: uni.wallet.chain }),
+      await writePadded(uni, { address: permit2, abi: permit2Abi, functionName: "approve", args: [token, router, maxUint160, Number(maxUint48)], account: owner, chain: uni.wallet.chain }),
     );
   }
   return sent;
@@ -49,7 +49,7 @@ export async function ensureLpOperator(uni: UnimodClient, owner: Address): Promi
   const isOp = await uni.public.readContract({ address: unimod, abi: erc6909Abi, functionName: "isOperator", args: [owner, router] });
   if (isOp) return [];
   return [
-    await uni.wallet.writeContract({ address: unimod, abi: erc6909Abi, functionName: "setOperator", args: [router, true], account: owner, chain: uni.wallet.chain }),
+    await writePadded(uni, { address: unimod, abi: erc6909Abi, functionName: "setOperator", args: [router, true], account: owner, chain: uni.wallet.chain }),
   ];
 }
 
@@ -67,7 +67,7 @@ export async function ensureLendingAuthorization(uni: UnimodClient, owner: Addre
   });
   if (authorized) return [];
   return [
-    await uni.wallet.writeContract({
+    await writePadded(uni, {
       address: uni.addresses.lending,
       abi: lendingAbi,
       functionName: "setAuthorization",

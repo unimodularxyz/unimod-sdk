@@ -6,7 +6,7 @@
  */
 
 import type { Address, Hex } from "viem";
-import type { UnimodClient } from "./client.js";
+import { writePadded, type UnimodClient } from "./client.js";
 import { lensAbi, routerAbi } from "./abis.js";
 import { deadline as defaultDeadline, minOut } from "./units.js";
 
@@ -44,7 +44,7 @@ export async function swapExactIn(uni: UnimodClient, args: SwapArgs): Promise<He
   if (!uni.wallet) throw new Error("swapExactIn needs a wallet client");
   const quoted = await previewSwap(uni, args.poolId, args.assetInIndex, args.assetOutIndex, args.amountIn);
 
-  return uni.wallet.writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "swapExactIn",
@@ -99,7 +99,7 @@ export async function swapExactOut(uni: UnimodClient, args: SwapExactOutArgs): P
   const quoted = await previewSwapExactOut(uni, args.poolId, args.assetInIndex, args.assetOutIndex, args.amountOut);
   const maxAmountIn = (quoted * (10_000n + (args.slippageBps ?? 50n))) / 10_000n;
 
-  return uni.wallet.writeContract({
+  return writePadded(uni, {
     address: uni.addresses.router,
     abi: routerAbi,
     functionName: "swapExactOut",
