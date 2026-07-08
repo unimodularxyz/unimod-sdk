@@ -1,6 +1,6 @@
 {
   "name": "@unimodular/unimod-sdk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "TypeScript SDK for the Unimod protocol (AMM + lending) — ergonomic, typed wrappers over the Router/Lens surface.",
   "license": "GPL-2.0-or-later",
   "type": "module",
@@ -13,7 +13,10 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "contracts:sync": "bash scripts/sync-contracts.sh",
     "codegen": "npm run contracts:sync && forge build --root contracts && wagmi generate",
