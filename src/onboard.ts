@@ -135,7 +135,7 @@ export async function signPermit2(uni: UnimodClient, owner: Address, token: Addr
     sigDeadline: BigInt(Math.floor(Date.now() / 1000) + 30 * 60),
   };
   const signature = await uni.wallet.signTypedData({
-    account: owner,
+    account: uni.wallet.account ?? owner, // hoisted account signs locally; address-only falls back to node-side signing
     domain: { name: "Permit2", chainId: uni.wallet.chain!.id, verifyingContract: uni.addresses.permit2 },
     types: PERMIT2_TYPES,
     primaryType: "PermitSingle",
@@ -161,7 +161,7 @@ export async function signLendingAuthorization(uni: UnimodClient, owner: Address
     deadline: BigInt(Math.floor(Date.now() / 1000) + 30 * 60),
   };
   const sig = await uni.wallet.signTypedData({
-    account: owner,
+    account: uni.wallet.account ?? owner,
     domain: { chainId: uni.wallet.chain!.id, verifyingContract: uni.addresses.lending },
     types: {
       Authorization: [
