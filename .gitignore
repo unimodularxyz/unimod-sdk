@@ -7,3 +7,4 @@ src/generated.ts
 *.log
 .DS_Store
 *.tsbuildinfo
+test/setup/.runtime.json

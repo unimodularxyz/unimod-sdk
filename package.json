@@ -22,7 +22,9 @@
     "codegen": "npm run contracts:sync && forge build --root contracts && wagmi generate",
     "build": "npm run codegen && tsc -p tsconfig.json",
     "typecheck": "npm run codegen && tsc --noEmit",
-    "clean": "rm -rf dist src/generated.ts"
+    "clean": "rm -rf dist src/generated.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "peerDependencies": {
     "viem": "^2.0.0"
@@ -31,7 +33,8 @@
     "@wagmi/cli": "^2.1.0",
     "abitype": "^1.0.0",
     "typescript": "^5.4.0",
-    "viem": "^2.21.0"
+    "viem": "^2.21.0",
+    "vitest": "^4.1.10"
   },
   "publishConfig": {
     "access": "public"
