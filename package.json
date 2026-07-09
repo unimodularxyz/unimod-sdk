@@ -1,6 +1,6 @@
 {
   "name": "@unimodular/unimod-sdk",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "TypeScript SDK for the Unimod protocol (AMM + lending) — ergonomic, typed wrappers over the Router/Lens surface.",
   "license": "GPL-2.0-or-later",
   "type": "module",
