@@ -17,6 +17,7 @@ export * from "./position.js";
 export * from "./onboard.js";
 export * from "./errors.js";
 export * from "./preflight.js";
+export * from "./liquidate.js";
 
 // Raw ABIs, for callers who want to drop down to viem directly.
 export { lensAbi, routerAbi, lendingAbi, registryAbi, permit2Abi, erc20Abi, erc6909Abi } from "./abis.js";
