@@ -1,8 +1,9 @@
 /**
  * onboard.ts — the one-time approvals a user needs before transacting via the Router.
  *
- * All helpers are IDEMPOTENT (read current allowance, skip if already set). Covers the Permit2
- * `AllowanceTransfer` path + lending authorization. For the gasless EIP-712 `Authorization` + a
+ * All helpers are IDEMPOTENT (read current allowance, skip if already set) and WAIT for their
+ * transactions to mine before returning — the next call's gas estimate must see the new state.
+ * Covers the Permit2 `AllowanceTransfer` path + lending authorization. For the gasless EIP-712 `Authorization` + a
  * multicall onboarding bundle, see the contracts repo's `web3/examples/onboard.ts`.
  */
 
@@ -36,7 +37,7 @@ export async function ensurePermit2Approval(uni: UnimodClient, token: Address, o
       await writePadded(uni, { address: permit2, abi: permit2Abi, functionName: "approve", args: [token, router, maxUint160, Number(maxUint48)], account: owner, chain: uni.wallet.chain }),
     );
   }
-  return sent;
+  return mined(uni, sent);
 }
 
 /**
@@ -48,9 +49,9 @@ export async function ensureLpOperator(uni: UnimodClient, owner: Address): Promi
   const { unimod, router } = uni.addresses;
   const isOp = await uni.public.readContract({ address: unimod, abi: erc6909Abi, functionName: "isOperator", args: [owner, router] });
   if (isOp) return [];
-  return [
+  return mined(uni, [
     await writePadded(uni, { address: unimod, abi: erc6909Abi, functionName: "setOperator", args: [router, true], account: owner, chain: uni.wallet.chain }),
-  ];
+  ]);
 }
 
 /**
@@ -66,7 +67,7 @@ export async function ensureLendingAuthorization(uni: UnimodClient, owner: Addre
     args: [owner, uni.addresses.router],
   });
   if (authorized) return [];
-  return [
+  return mined(uni, [
     await writePadded(uni, {
       address: uni.addresses.lending,
       abi: lendingAbi,
@@ -75,5 +76,14 @@ export async function ensureLendingAuthorization(uni: UnimodClient, owner: Addre
       account: owner,
       chain: uni.wallet.chain,
     }),
-  ];
+  ]);
+}
+
+/** Wait for onboarding txs to mine; throws if any reverted. */
+async function mined(uni: UnimodClient, hashes: Hex[]): Promise<Hex[]> {
+  for (const hash of hashes) {
+    const r = await uni.public.waitForTransactionReceipt({ hash });
+    if (r.status !== "success") throw new Error(`onboarding transaction reverted: ${hash}`);
+  }
+  return hashes;
 }

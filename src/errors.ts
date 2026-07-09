@@ -29,3 +29,34 @@ export function messageForError(errorName: string | undefined): string {
   if (!errorName) return "Transaction failed.";
   return ERROR_MESSAGES[errorName] ?? `Transaction reverted (${errorName}).`;
 }
+
+/* ── Selector decoding ─────────────────────────────────────────────────────────
+ * Errors thrown by inner contracts (lending, AMM core) bubble through the Router,
+ * whose ABI viem decodes against — so they surface as bare 4-byte selectors.
+ * Map selectors across every protocol ABI back to names + the catalog above.
+ */
+
+import { toFunctionSelector, type Abi } from "viem";
+import { lendingAbi, lensAbi, registryAbi, routerAbi } from "./abis.js";
+
+const errorBySelector = new Map<string, string>();
+for (const abi of [routerAbi, lendingAbi, lensAbi, registryAbi] as readonly Abi[]) {
+  for (const item of abi) {
+    if (item.type === "error") {
+      const sig = `${item.name}(${item.inputs.map((i: { type: string }) => i.type).join(",")})`;
+      errorBySelector.set(toFunctionSelector(sig as never).toLowerCase(), item.name);
+    }
+  }
+}
+
+/**
+ * Turn any thrown error into a one-line, user-facing message: undecoded custom-error
+ * selectors become `Name: friendly message`; everything else keeps its first line.
+ */
+export function explainError(e: unknown): string {
+  const message = e instanceof Error ? e.message : String(e);
+  const selector = message.match(/0x[0-9a-fA-F]{8}(?![0-9a-fA-F])/)?.[0]?.toLowerCase();
+  const name = selector ? errorBySelector.get(selector) : undefined;
+  if (name) return `${name}: ${messageForError(name)}`;
+  return message.split("\n")[0] ?? message;
+}

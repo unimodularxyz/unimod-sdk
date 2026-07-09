@@ -11,7 +11,7 @@
 import type { Address, Hex } from "viem";
 import { writePadded, type UnimodClient } from "./client.js";
 import { lendingAbi, lensAbi, routerAbi } from "./abis.js";
-import { deadline as defaultDeadline } from "./units.js";
+import { deadline as defaultDeadline, formatHealth } from "./units.js";
 
 export interface LendingAmountArgs {
   poolId: Hex;
@@ -175,4 +175,23 @@ export async function getMarketState(uni: UnimodClient, poolId: Hex, assetIndex:
     availableLiquidity: supply - borrow,
     utilization: supply === 0n ? 0 : Number(borrow) / Number(supply),
   };
+}
+
+/**
+ * Health factor the position WOULD have after borrowing `borrowDelta` more of `assetIndex`
+ * and changing posted collateral by `collateralDelta` LP (positive = deposit, negative =
+ * release). Returns null for "no debt" (the sentinel), else the WAD health as a float —
+ * < 1 means the resulting position would be liquidatable.
+ */
+export async function previewHealthAfter(
+  uni: UnimodClient,
+  args: { poolId: Hex; user: Address; assetIndex: bigint; borrowDelta?: bigint; collateralDelta?: bigint },
+): Promise<number | null> {
+  const h = await uni.public.readContract({
+    address: uni.addresses.lens,
+    abi: lensAbi,
+    functionName: "previewHealthAfter",
+    args: [args.poolId, args.user, args.assetIndex, args.borrowDelta ?? 0n, args.collateralDelta ?? 0n],
+  });
+  return formatHealth(h);
 }
