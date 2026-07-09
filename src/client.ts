@@ -40,7 +40,10 @@ type WriteParams = Parameters<WalletClient["writeContract"]>[0];
 export async function writePadded(uni: UnimodClient, params: WriteParams): Promise<`0x${string}`> {
   if (!uni.wallet) throw new Error("write needs a wallet client");
   const gas = await uni.public.estimateContractGas(params as never);
-  return uni.wallet.writeContract({ ...params, gas: (gas * 130n) / 100n } as WriteParams);
+  // Prefer the wallet's hoisted Account object: an address-only `account` makes viem fall back
+  // to eth_sendTransaction (node-side signing), which only works for node-owned dev accounts.
+  const account = uni.wallet.account ?? (params as { account?: unknown }).account;
+  return uni.wallet.writeContract({ ...params, account, gas: (gas * 130n) / 100n } as WriteParams);
 }
 
 /**
