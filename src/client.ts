@@ -58,3 +58,27 @@ export function addressesFromDeployments(json: { contracts: Record<string, strin
     permit2: c.permit2 as Address,
   };
 }
+
+/** Execute several Router calls atomically in ONE transaction (Router.multicall self-delegatecalls). */
+export async function multicallRouter(
+  uni: UnimodClient,
+  args: { calls: readonly `0x${string}`[]; account: Address },
+): Promise<`0x${string}`> {
+  if (!uni.wallet) throw new Error("multicallRouter needs a wallet client");
+  return writePadded(uni, {
+    address: uni.addresses.router,
+    abi: [
+      {
+        type: "function",
+        name: "multicall",
+        stateMutability: "nonpayable",
+        inputs: [{ name: "data", type: "bytes[]" }],
+        outputs: [{ name: "results", type: "bytes[]" }],
+      },
+    ] as const,
+    functionName: "multicall",
+    args: [args.calls],
+    account: args.account,
+    chain: uni.wallet.chain,
+  });
+}
