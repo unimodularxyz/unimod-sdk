@@ -8,3 +8,4 @@ src/generated.ts
 .DS_Store
 *.tsbuildinfo
 test/setup/.runtime.json
+node_modules
