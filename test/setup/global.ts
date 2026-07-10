@@ -13,7 +13,8 @@ import { join, resolve } from "node:path";
 // serve this run's requests — that leaks old chain state and fails tests in confusing ways.
 const PORT = 8500 + (process.pid % 400);
 const RPC = `http://127.0.0.1:${PORT}`;
-const UNIMOD = resolve(__dirname, "../../../unimod");
+// Sibling checkout by default; CI (or a worktree) points elsewhere via UNIMOD_REPO.
+const UNIMOD = process.env.UNIMOD_REPO ?? resolve(__dirname, "../../../unimod");
 const RUNTIME = join(__dirname, ".runtime.json");
 
 const env = { ...process.env, PATH: `${process.env.HOME}/.foundry/bin:${process.env.PATH}` };
@@ -42,6 +43,13 @@ export default async function setup(): Promise<() => void> {
   anvil = spawn("anvil", ["--port", String(PORT), "--code-size-limit", "100000", "--chain-id", "31338"], {
     env,
     stdio: "ignore",
+  });
+  // Fail fast and loudly: a dead anvil otherwise leaves forge polling a dead RPC forever.
+  anvil.on("error", (e) => {
+    throw new Error(`anvil failed to spawn: ${e.message}`);
+  });
+  anvil.on("exit", (code) => {
+    if (code !== null && code !== 0) console.error(`anvil exited with code ${code} — the test chain is gone`);
   });
   await waitForRpc(RPC);
 

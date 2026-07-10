@@ -1,0 +1,51 @@
+name: Test
+
+# The integration suite: hermetic anvil + the contracts repo's own deterministic deploy,
+# then vitest (unit + integration). This is the regression gate in front of npm publishes.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      # Short-lived token from the org GitHub App to read the private contracts repo.
+      - uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: unimodularxyz
+          repositories: unimod
+
+      # Full contracts checkout (with submodules — forge-std/solady are required to build):
+      # the vitest global setup runs its script/local-deploy.sh against a throwaway anvil.
+      - name: Clone unimod (contracts)
+        run: |
+          git clone --recurse-submodules --depth 1 \
+            "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/unimodularxyz/unimod.git" \
+            "$RUNNER_TEMP/unimod"
+      - name: Configure contracts clone URL (codegen)
+        run: echo "CONTRACTS_REPO=https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/unimodularxyz/unimod.git" >> "$GITHUB_ENV"
+
+      # Match the contracts repo's pinned foundry (formatting/build parity).
+      - uses: foundry-rs/foundry-toolchain@c7450ba673e133f5ee30098b3b54f444d3a2ca2d # v1
+        with:
+          version: v1.7.1
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+      - run: npm run codegen # src/generated.ts is gitignored — regenerate before vitest imports src/
+      - run: npm test
+        env:
+          UNIMOD_REPO: ${{ runner.temp }}/unimod

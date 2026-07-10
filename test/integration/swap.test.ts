@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { parseUnits } from "viem";
-import { ensurePermit2Approval, previewSwap, swapExactIn } from "../../src/index.js";
-import { balanceOf, clientFor, mined, poolId, poolTokens } from "../helpers.js";
+import { ensurePermit2Approval, previewSwap, previewSwapExactOut, swapExactIn, swapExactOut } from "../../src/index.js";
+import { balanceOf, clientFor, mined, mintTo, poolId, poolTokens } from "../helpers.js";
 
 describe("swap (integration)", () => {
-  const { uni, account } = clientFor("user");
+  const me = clientFor("swapper"); // dedicated account — file order is nondeterministic
+  const { uni, account } = me;
   const [tokenIn, tokenOut] = [poolTokens[0]!, poolTokens[1]!];
+
+  it("fund the swapper account (test faucet)", async () => {
+    for (const t of poolTokens) await mintTo(me, t.address, account, parseUnits("1000", t.decimals));
+    expect(await balanceOf(tokenIn.address, account)).toBeGreaterThan(0n);
+  });
 
   it("previewSwapIn equals the executed swap output at the same state", async () => {
     await ensurePermit2Approval(uni, tokenIn.address, account);
@@ -46,5 +52,32 @@ describe("swap (integration)", () => {
     );
     const endA = await balanceOf(tokenIn.address, account);
     expect(endA).toBeLessThan(startA); // fees + impact make the loop strictly losing
+  });
+});
+
+describe("swap exact-out (integration)", () => {
+  const { uni, account } = clientFor("swapper");
+  const [tokenIn, tokenOut] = [poolTokens[0]!, poolTokens[1]!];
+
+  it("previewSwapExactOut equals the executed input paid, output is exact", async () => {
+    await ensurePermit2Approval(uni, tokenIn.address, account);
+    const amountOut = parseUnits("40", tokenOut.decimals);
+    const quote = await previewSwapExactOut(uni, poolId, 0n, 1n, amountOut);
+    expect(quote).toBeGreaterThan(0n);
+    const inBefore = await balanceOf(tokenIn.address, account);
+    const outBefore = await balanceOf(tokenOut.address, account);
+    await mined(
+      await swapExactOut(uni, {
+        poolId,
+        tokenIn: tokenIn.address,
+        tokenOut: tokenOut.address,
+        assetInIndex: 0n,
+        assetOutIndex: 1n,
+        amountOut,
+        recipient: account,
+      }),
+    );
+    expect(inBefore - (await balanceOf(tokenIn.address, account))).toBe(quote);
+    expect((await balanceOf(tokenOut.address, account)) - outBefore).toBe(amountOut);
   });
 });
